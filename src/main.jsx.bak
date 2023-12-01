@@ -1,0 +1,665 @@
+if (window.innerWidth >= 768) {
+
+
+
+
+
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
+import { RGBELoader } from "three/examples/jsm/loaders/RGBELoader.js";
+import {
+  CSS3DRenderer,
+  CSS3DObject,
+} from "three/addons/renderers/CSS3DRenderer.js";
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "./index.css";
+import { Raycaster, Vector2 } from "three";
+import App from "./App";
+
+const scene = new THREE.Scene();
+const mouse = new THREE.Vector2();
+const raycaster = new THREE.Raycaster();
+const manager = new THREE.LoadingManager();
+
+/*new RGBELoader().load("components/7.hdr", function (textrue) {
+  textrue.mapping = THREE.EquirectangularReflectionMapping;
+  scene.background = textrue;
+  scene.environment = textrue;
+});*/
+const light = new THREE.SpotLight(0xed0ae0, -1);
+light.position.set(2, 2, 2);
+scene.add(light);
+
+const light1 = new THREE.PointLight(0xffffff, 2.5);
+light1.position.set(2, 1, 1);
+scene.add(light1);
+const light2 = new THREE.PointLight(0x5b1800, 3);
+light2.position.set(0, -0.1, -1.2);
+scene.add(light2);
+const light3 = new THREE.PointLight(0xffffff, 3);
+light3.position.set(0, -0.2, -1.2);
+scene.add(light3);
+
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  1000
+);
+scene.add(camera);
+camera.zoom;
+camera.position.set(1, 1.5, 1.5);
+
+const renderer = new THREE.WebGLRenderer();
+const spotLight = new THREE.SpotLight(0xffffff);
+spotLight.position.set(100, 1000, 100);
+spotLight.map = new THREE.TextureLoader().load(light.html);
+
+spotLight.castShadow = true;
+
+spotLight.shadow.mapSize.width = 1024;
+spotLight.shadow.mapSize.height = 1024;
+
+spotLight.shadow.camera.near = 500;
+spotLight.shadow.camera.far = 4000;
+spotLight.shadow.camera.fov = 30;
+
+scene.add(spotLight);
+
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enabled = false;
+controls.enablePan = false;
+controls.enableRotate = false;
+
+const loadingManager = new THREE.LoadingManager();
+loadingManager.onStart = () => {
+  // Loading başladığında yapılacaklar
+  console.log("Loading started");
+  showLoadingScreen();
+};
+loadingManager.onLoad = () => {
+  // Tüm dosyalar yüklendiğinde yapılacaklar
+  console.log("Loading complete");
+  hideLoadingScreen();
+};
+loadingManager.onProgress = (url, itemsLoaded, itemsTotal) => {
+  // Dosya yüklendiğinde yapılacaklar
+  console.log(
+    `Loading file: ${url}. ${itemsLoaded} of ${itemsTotal} files loaded.`
+  );
+};
+loadingManager.onError = (url) => {
+  // Yükleme hatası oluştuğunda yapılacaklar
+  console.error(`Failed to load file: ${url}`);
+};
+
+function showLoadingScreen() {
+  const loadingScreen = document.createElement("div");
+  loadingScreen.id = "loading-screen";
+  const loadingGif = new Image();
+  loadingGif.src = "loading.gif"; // GIF dosyasının URL'si
+  loadingScreen.appendChild(loadingGif);
+  document.body.appendChild(loadingScreen);
+
+  return loadingGif;
+}
+
+function hideLoadingScreen() {
+  // Loading ekranını kaldırmak için burada gerekli kodları yazabilirsiniz
+  loadingGif.style.display = "none";
+  const loadingScreen = document.getElementById("loading-screen");
+  loadingScreen.remove();
+}
+const loadingGif = showLoadingScreen();
+loadingGif.onload = function () {
+  const loader = new GLTFLoader();
+  loader.load("components/table/scene.gltf", function (gltf) {
+    gltf.scene.position.x = 0;
+    gltf.scene.position.y = 0;
+    gltf.scene.position.z = 0;
+    gltf.scene.receiveShadow = false;
+    gltf.scene.castShadow = false;
+    scene.add(gltf.scene);
+
+    hideLoadingScreen(loadingGif);
+  });
+};
+
+// Yükleme işlemi burada gerçekleştirilir
+
+const loader = new GLTFLoader(loadingManager);
+loader.load("components/table/scene.gltf", function (gltf) {
+  gltf.scene.position.x = 0;
+  gltf.scene.position.y = 0;
+  gltf.scene.position.z = 0;
+  scene.add(gltf.scene);
+});
+
+loader.load("components/dedeler/DEDE1/DEDE1.gltf", function (dede) {
+  dede.scene.position.x = -0.5;
+  dede.scene.position.y = -0.2;
+  dede.scene.position.z = -0.4;
+  dede.scene.scale.set(0.225, 0.225, 0.225);
+  dede.scene.rotation.y = THREE.MathUtils.degToRad(90);
+  scene.add(dede.scene);
+});
+
+loader.load("components/dedeler/DEDE2/DEDE2.gltf", function (dede2) {
+  dede2.scene.position.x = -0.1;
+  dede2.scene.position.y = -0.2;
+  dede2.scene.position.z = 1.2;
+  dede2.scene.scale.set(0.21, 0.21, 0.21);
+  dede2.scene.rotation.y = THREE.MathUtils.degToRad(180);
+  scene.add(dede2.scene);
+});
+loader.load("components/dedeler/DEDE3/DEDE3.gltf", function (dede3) {
+  dede3.scene.position.x = -0.5;
+  dede3.scene.position.y = -0.2;
+  dede3.scene.position.z = 0.5;
+  dede3.scene.scale.set(0.21, 0.21, 0.21);
+  dede3.scene.rotation.y = THREE.MathUtils.degToRad(90);
+  scene.add(dede3.scene);
+});
+loader.load("components/dedeler/DEDE5/DEDE5.gltf", function (dede4) {
+  dede4.scene.position.x = 0.5;
+  dede4.scene.position.y = -0.2;
+  dede4.scene.position.z = 0.5;
+  dede4.scene.scale.set(0.22, 0.2, 0.2);
+  dede4.scene.rotation.y = THREE.MathUtils.degToRad(270);
+  scene.add(dede4.scene);
+});
+loader.load("components/dedeler/DEDE4/DEDE4.gltf", function (dede5) {
+  dede5.scene.position.x = 0.5;
+  dede5.scene.position.y = -0.2;
+  dede5.scene.position.z = -0.4;
+  dede5.scene.scale.set(0.21, 0.21, 0.21);
+  dede5.scene.rotation.y = THREE.MathUtils.degToRad(270);
+  scene.add(dede5.scene);
+});
+
+//const clickableObjects = [];
+let animationId;
+let thorn;
+loader.load("components/thorn/scene.gltf", function (thorn) {
+  thorn.scene.scale.set(0.4, 0.4, 0.4);
+  thorn.scene.rotation.y = THREE.MathUtils.degToRad(270);
+  thorn.scene.position.set(0, -0.2, -1.2);
+  controls.target = thorn.scene.position;
+  controls.enablePan = false;
+
+  /*thorn.scene.traverse((child) => {
+    if (child.isMesh) {
+      child.userData.name = "thorn";
+      clickableObjects.push(child);
+    }
+  });*/
+  scene.add(thorn.scene);
+});
+
+/*animate();
+
+function onMouseClick(event) {
+  event.preventDefault();
+
+  // Normalleştirilmiş cihaz koordinatlarına dönüştür
+  mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+  // Raycaster'ı güncelle
+  raycaster.setFromCamera(mouse, camera);
+
+  // İlgili tüm nesnelerin dizisini oluştur
+  const intersects = raycaster.intersectObjects(clickableObjects);
+
+  if (intersects.length > 0) {
+    // İlk kesişen nesneyi al (en yakındaki)
+    const object = intersects[0].object;
+
+    // Eğer nesne thorn nesnesine aitse, işlemi gerçekleştir
+    if (object.userData.name === "thorn") {
+      const tick = () => {
+        camera.position.x -= 0.01;
+        // camera.position.y -= 0.01;
+        camera.position.z -= 0.01;
+        camera.zoom += 0.01;
+        if (
+          (camera.zoom =
+            2.0 &&
+            camera.position.z <= -0.2 &&
+            //camera.position.y <= 1 &&
+            camera.position.x <= -0.1)
+        ) {
+          return;
+        }
+
+        animationId = requestAnimationFrame(tick);
+      };
+
+      let animationId = requestAnimationFrame(tick);
+
+      tick();
+
+      // İstediğiniz işlemi burada gerçekleştirin
+      // Modal pencereyi açın
+
+      // Eğer modal alanı zaten görünüyorsa işlem yapma
+      const iframe = document.createElement("iframe");
+      iframe.src = "https://kilopi.net/ecosystem/";
+      iframe.style.width = "90%";
+      iframe.style.height = "90%";
+      iframe.style.border = "none";
+      iframe.style.display = "block";
+      iframe.style.margin = "auto";
+
+      const overlay = document.createElement("div");
+      overlay.id = "overlay";
+      overlay.style.position = "fixed";
+      overlay.style.top = "0";
+      overlay.style.left = "0";
+      overlay.style.width = "100%";
+      overlay.style.height = "100%";
+      overlay.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+      overlay.style.zIndex = "9999";
+      overlay.appendChild(iframe);
+
+      const close = document.createElement("span");
+      close.id = "close";
+      close.style.position = "absolute";
+      close.style.top = "5px";
+      close.style.right = "-10px";
+      close.style.cursor = "pointer";
+      close.style.fontSize = "72px";
+      close.style.color = "white";
+      close.innerHTML = "&times;";
+      close.addEventListener("click", () => {
+        overlay.style.display = "none";
+      });
+
+      overlay.appendChild(close);
+
+      document.body.appendChild(overlay);
+
+      const closeBtn = document.createElement("span");
+      closeBtn.id = "close-btn";
+      closeBtn.innerHTML = "&times;"; // HTML karakter koduyla çarpı simgesi ekleyin
+
+      closeBtn.addEventListener("click", function () {
+        overlay.style.display = "none";
+        document.body.removeChild(overlay);
+      });
+      overlay.appendChild(closeBtn);
+    }
+  }
+}
+window.addEventListener("click", onMouseClick, false);
+
+// Modal kapatma işlevi
+function closeModal() {
+  document.getElementById("my-modal").style.display = "none";
+}
+
+// Modal kapatma işlevi (modal dışına tıklandığında da çalışır)
+document.addEventListener("click", function (event) {
+  if (event.target === document.getElementById("my-modal")) {
+    closeModal();
+  }
+});
+
+document.addEventListener("click", function (event) {
+  if (
+    event.target !== document.getElementById("my-iframe") &&
+    event.target.parentNode !== document.getElementById("my-iframe")
+  ) {
+    document.getElementById("my-iframe").style.display = "none";
+  }
+});
+
+window.addEventListener("click", onMouseClick, false);
+*/
+window.addEventListener("resize", onWindowResize, false);
+function onWindowResize() {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  render();
+}
+function animate() {
+  requestAnimationFrame(animate);
+
+  controls.update();
+
+  render();
+}
+
+function render() {
+  renderer.render(scene, camera);
+}
+
+function createBox(name, w, h, d, x, y, z, color) {
+  var geometry = new THREE.BoxGeometry(w, h, d);
+  var material = new THREE.MeshBasicMaterial({ color: color });
+  var loader = new THREE.TextureLoader();
+  material.map = loader.load("../components/sonparke.jpg");
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  mesh.name = name;
+
+  scene.add(mesh);
+}
+
+function createwall(name, w, h, d, x, y, z, color) {
+  var geometry = new THREE.BoxGeometry(w, h, d);
+  var material = new THREE.MeshBasicMaterial({ color: color });
+  var loader = new THREE.TextureLoader();
+  material.map = loader.load("../components/duvarsag.jpg");
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  mesh.name = name;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
+
+function createwall2(name, w, h, d, x, y, z, color) {
+  var geometry = new THREE.BoxGeometry(w, h, d);
+  var material = new THREE.MeshBasicMaterial({ color: color });
+  var loader = new THREE.TextureLoader();
+  material.map = loader.load("../components/duvar.jpg");
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  mesh.name = name;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
+function createwall3(name, w, h, d, x, y, z, color) {
+  var geometry = new THREE.BoxGeometry(w, h, d);
+  var material = new THREE.MeshBasicMaterial({ color: color });
+  var loader = new THREE.TextureLoader();
+  material.map = loader.load("../components/duvarsag.jpg");
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  mesh.name = name;
+
+  scene.add(mesh);
+}
+function createwall4(name, w, h, d, x, y, z, color) {
+  var geometry = new THREE.BoxGeometry(w, h, d);
+  var material = new THREE.MeshBasicMaterial({ color: color });
+  var loader = new THREE.TextureLoader();
+  material.map = loader.load("../components/duvar.jpg");
+  var mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(x, y, z);
+  mesh.name = name;
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
+
+createBox("floor", 8, 1, 8, 0, -0.7, 0, 0xffffff);
+
+createwall("wall1", 0.5, 5, 8, -4.1, 1.3, 0, 0xffffff);
+createwall2("wall2", 8, 5, 0.5, 0, 1.3, -4.3, 0xffffff);
+
+createwall3("wall3", 0.5, 5, 8.3, 4.1, 1.3, 0, 0xffffff);
+
+createwall4("wall4", 8, 5, 0.5, 0, 1.3, 4.3, 0xffffff);
+
+//createBox("floor", 10, 1, 30, -10, -0.7, 0, 0xffffff);
+
+animate();
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <div className="resourcesx">
+      <ul className="demo">
+        <div id="solmenu">
+          <li>
+            <div className="font-effect-fire">Resources</div>
+          </li>
+
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/ecosystem/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ecosystem
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/roadmap/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Roadmap
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/documentation/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Documentation
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/files/whitepaper_kilopi.pdf"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Whitepaper
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/slide/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Videos (Turkish){" "}
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/blog/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Blog
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/faq/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                FAQ
+              </a>
+            </h6>
+          </li>
+
+          <li>
+            <div className="font-effect-fire">Token</div>
+          </li>
+
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/token/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Basic Info
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/utility/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Utiliy
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/tokenomics/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Tokenomics
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/transparency-2/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Contract/Address List
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/token-distribution/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Distribution Charts
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/exchanges/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Exchanges
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/dex-screener/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Dex Screener
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://coinmarketcap.com/currencies/kilopi/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Coinmarketcap
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://www.coingecko.com/en/coins/kilopi"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Coingecko
+              </a>
+            </h6>
+          </li>
+
+          <li>
+            <div className="font-effect-fire">Community</div>
+          </li>
+
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/community/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Community
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/codeofconduct/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Code of Conduct
+              </a>
+            </h6>
+          </li>
+          <li>
+            <h6 className="font-effect-outline">
+              <a
+                href="https://kilopi.net/ambassadors/"
+                target="_blank"
+                rel="noreferrer"
+              >
+                Ambassador Program
+              </a>
+            </h6>
+          </li>
+        </div>
+      </ul>
+
+      <div className="resourcesy">
+        <div className="font-effect-outline" id="loading">
+          THIS WEB PAGE IS UNDER CONSTRUCTION
+        </div>
+        <h6 className="baslik">Kilopi, Sustainable Web3 Applications</h6>
+        <h6 className="font-effect-outline">
+          Kilopi is a tokenized ecosystem where the sustainable web3
+          applications are being developed by the organic community
+        </h6>
+      </div>
+    </div>
+
+    <App />
+  </React.StrictMode>
+);
+
+
+};
